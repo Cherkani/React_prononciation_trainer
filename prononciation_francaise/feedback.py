@@ -1,7 +1,13 @@
-def provide_feedback(recognized_text, reference_phrase):
-    recognized_text = recognized_text.strip().lower()
-    reference_phrase = reference_phrase.strip().lower()
+from flask import Flask, request, jsonify
 
+app = Flask(__name__)
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    recognized_text = request.json.get('recognized_text', "").strip().lower()
+    reference_phrase = request.json.get('reference_phrase', "").strip().lower()
+
+    # Feedback par mot
     reference_words = reference_phrase.split()
     recognized_words = recognized_text.split()
     feedback = []
@@ -12,6 +18,7 @@ def provide_feedback(recognized_text, reference_phrase):
         else:
             feedback.append(f"Incorrect: You said '{recog_word}', should be '{ref_word}'")
 
+    # Mots en trop / manquants
     if len(reference_words) < len(recognized_words):
         extra_words = recognized_words[len(reference_words):]
         feedback.append(f"Extra words: {' '.join(extra_words)}")
@@ -20,4 +27,7 @@ def provide_feedback(recognized_text, reference_phrase):
         feedback.append(f"Missing words: {' '.join(missing_words)}")
 
     match = recognized_text == reference_phrase
-    return {"match": match, "feedback": feedback}
+    return jsonify({"match": match, "feedback": feedback})
+
+if __name__ == "__main__":
+    app.run(port=5003)
