@@ -106,56 +106,6 @@
           setTimeout(compareText, 500);
         });
 
-      // Fonction pour convertir les chiffres en mots
-      function numberToWords(num) {
-        const ones = [
-          "",
-          "un",
-          "deux",
-          "trois",
-          "quatre",
-          "cinq",
-          "six",
-          "sept",
-          "huit",
-          "neuf",
-        ];
-        const teens = [
-          "dix",
-          "onze",
-          "douze",
-          "treize",
-          "quatorze",
-          "quinze",
-          "seize",
-          "dix-sept",
-          "dix-huit",
-          "dix-neuf",
-        ];
-        const tens = [
-          "",
-          "",
-          "vingt",
-          "trente",
-          "quarante",
-          "cinquante",
-          "soixante",
-          "soixante-dix",
-          "quatre-vingt",
-          "quatre-vingt-dix",
-        ];
-
-        if (num < 10) return ones[num];
-        if (num < 20) return teens[num - 10];
-        if (num < 100)
-          return (
-            tens[Math.floor(num / 10)] +
-            (num % 10 !== 0 ? "-" + ones[num % 10] : "")
-          );
-
-        return num.toString(); // Pour les nombres plus grands, on retourne simplement le nombre en chaîne de caractères
-      }
-
       // Fonction de normalisation du texte
       function normalizeText(text) {
         return text
@@ -164,8 +114,7 @@
           .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Supprimer la ponctuation
           .replace(/\s{2,}/g, " ") // Remplacer les espaces multiples par un seul espace
           .trim()
-          .toLowerCase()
-          .replace(/\b\d+\b/g, (match) => numberToWords(parseInt(match))); // Convertir les chiffres en mots
+          .toLowerCase();
       }
 
       // Comparaison du texte reconnu avec la phrase cible
