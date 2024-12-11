@@ -1,9 +1,7 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import speech_recognition as sr
 
 app = Flask(__name__)
-CORS(app)  # This enables CORS for all routes by default
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
@@ -22,6 +20,7 @@ def transcribe_audio():
             print("Audio successfully recorded.")
 
             recognized_text = recognizer.recognize_google(audio, language="fr-FR")
+            print(f"Recognized Text: {recognized_text}")
             return jsonify({"recognized_text": recognized_text})
 
     except sr.UnknownValueError:

@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import sounddevice as sd
 import scipy.io.wavfile as wavfile
 
 app = Flask(__name__)
-CORS(app)  # This enables CORS for all routes by default
 
 @app.route('/record_audio', methods=['POST'])
 def record_audio():
