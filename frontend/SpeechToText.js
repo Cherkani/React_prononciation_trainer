@@ -1,17 +1,61 @@
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ImageBackground,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5"; // Correct import for FontAwesome5
-import frenchData from "./french_sentences.json"; // Import the JSON file
+import axios from "axios";
 
 const SpeechToTextApp = () => {
   const [currentIndex, setCurrentIndex] = useState(0); // Track the current sentence index
   const [message, setMessage] = useState(""); // State to hold the message
   const micScale = useRef(new Animated.Value(1)).current; // Animation scale for the mic
   const [frenchSentences, setFrenchSentences] = useState([]); // State for dynamic sentences
+  const [recording, setRecording] = useState(false);
+  const [recognizedText, setRecognizedText] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [match, setMatch] = useState(false);
+  const recognition = useRef(null);
 
   // Load the sentences from JSON on mount
   useEffect(() => {
-    setFrenchSentences(frenchData); // Set the French sentences from JSON
+    // Charger les phrases françaises depuis l'API
+    axios
+      .get("http://localhost:5000/get_sentence")
+      .then((response) => {
+        if (response.data && response.data.sentence) {
+          setFrenchSentences([response.data.sentence]); // Stocker les phrases dans l'état
+        } else {
+          console.error("Réponse de l'API invalide:", response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors du chargement des phrases:", error);
+      });
+
+    // Initialiser l'API Web Speech
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Désolé, votre navigateur ne supporte pas l'API Web Speech.");
+    } else {
+      recognition.current = new webkitSpeechRecognition();
+      recognition.current.lang = "fr-FR"; // Définir la langue sur le français
+      recognition.current.continuous = false;
+      recognition.current.interimResults = false;
+
+      recognition.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setRecognizedText(transcript);
+        processAudio(transcript);
+      };
+
+      recognition.current.onerror = (event) => {
+        console.error("Erreur lors de la reconnaissance vocale:", event.error);
+      };
+    }
   }, []);
 
   // Function to start the pulsating animation
@@ -58,6 +102,39 @@ const SpeechToTextApp = () => {
     }
   };
 
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % frenchSentences.length);
+  };
+
+  const handleMicPress = () => {
+    if (recording) {
+      // Arrêter l'enregistrement et traiter l'audio
+      setRecording(false);
+      recognition.current.stop();
+    } else {
+      // Démarrer l'enregistrement
+      setRecording(true);
+      recognition.current.start();
+      startPulsating();
+    }
+  };
+
+  const processAudio = (transcript) => {
+    axios
+      .post("http://localhost:5000/process_audio", {
+        recognized_text: transcript,
+        selected_sentence: frenchSentences[currentIndex],
+      })
+      .then((response) => {
+        setFeedback(response.data.feedback);
+        setMatch(response.data.match);
+        setMessage(response.data.recognized_text);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du traitement de l'audio:", error);
+      });
+  };
+
   return (
     <View style={styles.container}>
       {/* Background with opacity */}
@@ -70,27 +147,39 @@ const SpeechToTextApp = () => {
       >
         <View style={styles.content}>
           {/* Microphone Button */}
-          <TouchableOpacity style={styles.microphoneButton} onPress={handleRecord}>
+          <TouchableOpacity
+            style={styles.microphoneButton}
+            onPress={handleMicPress}
+          >
             <Animated.View
               style={[styles.outerCircle, { transform: [{ scale: micScale }] }]} // Apply animation to outer circle
             >
-              <Icon name="microphone-alt" size={80} color="#FFFAF0" /> {/* Correct icon */}
+              <Icon name="microphone-alt" size={80} color="#FFFAF0" />{" "}
+              {/* Correct icon */}
             </Animated.View>
           </TouchableOpacity>
 
           {/* Card for Sentence */}
           {frenchSentences.length > 0 && (
             <View style={styles.card}>
-              <Text style={styles.cardText}>{frenchSentences[currentIndex]}</Text>
+              <Text style={styles.cardText}>
+                {frenchSentences[currentIndex]}
+              </Text>
             </View>
           )}
 
           {/* Navigation Buttons */}
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.navButton} onPress={handlePreviousSentence}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={handlePreviousSentence}
+            >
               <Text style={styles.navButtonText}>Previous</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton} onPress={handleNextSentence}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={handleNextSentence}
+            >
               <Text style={styles.navButtonText}>Next</Text>
             </TouchableOpacity>
           </View>
@@ -102,6 +191,11 @@ const SpeechToTextApp = () => {
             <Text style={styles.messageText}>{message}</Text>
           </View>
         )}
+        <Text style={styles.feedback}>{feedback}</Text>
+        <Text style={styles.recognizedText}>{recognizedText}</Text>
+        <Text style={styles.match}>
+          {match ? "Correspondance : Oui" : "Correspondance : Non"}
+        </Text>
       </ImageBackground>
     </View>
   );
@@ -183,6 +277,21 @@ const styles = StyleSheet.create({
   messageText: {
     color: "#fff",
     fontSize: 16,
+  },
+  feedback: {
+    marginTop: 20,
+    fontSize: 18,
+    color: "#333",
+  },
+  recognizedText: {
+    marginTop: 20,
+    fontSize: 18,
+    color: "#333",
+  },
+  match: {
+    marginTop: 20,
+    fontSize: 18,
+    color: "#333",
   },
 });
 
