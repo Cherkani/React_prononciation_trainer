@@ -1,0 +1,12 @@
+.feedback-display {
+  margin-top: 20px;
+}
+
+.feedback,
+.recognized-text,
+.correct-text,
+.comparison {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #333;
+}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./RecordButton.css";
 
 const RecordButton = ({ onRecognizedText }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -36,11 +37,19 @@ const RecordButton = ({ onRecognizedText }) => {
   };
 
   return (
-    <div>
-      <button onClick={startRecording} disabled={isRecording}>
+    <div className="record-button">
+      <button
+        onClick={startRecording}
+        disabled={isRecording}
+        className="button"
+      >
         Commencer l'enregistrement
       </button>
-      <button onClick={stopRecording} disabled={!isRecording}>
+      <button
+        onClick={stopRecording}
+        disabled={!isRecording}
+        className="button"
+      >
         Arrêter l'enregistrement
       </button>
     </div>

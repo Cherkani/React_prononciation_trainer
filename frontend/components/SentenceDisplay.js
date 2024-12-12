@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./SentenceDisplay.css";
 
 const SentenceDisplay = () => {
   const [sentence, setSentence] = useState("");
@@ -15,11 +16,13 @@ const SentenceDisplay = () => {
   };
 
   return (
-    <div>
-      <div id="sentence">
+    <div className="sentence-display">
+      <div id="sentence" className="sentence">
         {sentence || 'Cliquez sur "Obtenir une phrase" pour commencer'}
       </div>
-      <button onClick={getSentence}>Obtenir une phrase</button>
+      <button onClick={getSentence} className="button">
+        Obtenir une phrase
+      </button>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./FeedbackDisplay.css";
 
 const FeedbackDisplay = ({ recognizedText }) => {
   const [feedback, setFeedback] = useState("");
