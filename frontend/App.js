@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, SafeAreaView } from "react-native";
-import SpeechToTextApp from "./SpeechToText"; // Import your SpeechToTextApp component
-// import RandomWordsApp from "./RandomWordsApp";
+import SentenceDisplay from "./components/SentenceDisplay";
+import RecordButton from "./components/RecordButton";
+import FeedbackDisplay from "./components/FeedbackDisplay";
 
 const App = () => {
+  const [recognizedText, setRecognizedText] = useState("");
+
   return (
     <SafeAreaView style={styles.container}>
-      <SpeechToTextApp />
+      <SentenceDisplay />
+      <RecordButton onRecognizedText={setRecognizedText} />
+      <FeedbackDisplay recognizedText={recognizedText} />
     </SafeAreaView>
   );
 };
@@ -14,7 +19,9 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF", // Optional: background color for the entire app
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
