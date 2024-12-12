@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, SafeAreaView } from "react-native";
 import SpeechToTextApp from "./SpeechToText"; // Import your SpeechToTextApp component
+// import RandomWordsApp from "./RandomWordsApp";
 
 const App = () => {
   return (

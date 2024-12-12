@@ -25,10 +25,13 @@ const SpeechToTextApp = () => {
   useEffect(() => {
     // Charger les phrases françaises depuis l'API
     axios
-      .get("http://localhost:5000/get_sentence")
+      .get("http://localhost:5000/get_sentences") // Assurez-vous que l'API renvoie plusieurs phrases
       .then((response) => {
-        if (response.data && response.data.sentence) {
-          setFrenchSentences([response.data.sentence]); // Stocker les phrases dans l'état
+        if (response.data && response.data.sentences) {
+          setFrenchSentences(response.data.sentences); // Stocker les phrases dans l'état
+          console.log("Sentences loaded:", response.data.sentences); // Log the loaded sentences
+          setCurrentIndex(0); // Réinitialiser l'index actuel
+          setMessage(""); // Réinitialiser le message
         } else {
           console.error("Réponse de l'API invalide:", response.data);
         }
@@ -49,7 +52,10 @@ const SpeechToTextApp = () => {
       recognition.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setRecognizedText(transcript);
-        processAudio(transcript);
+
+        // Capture l'audio en Blob
+        const audioBlob = new Blob(event.results, { type: "audio/wav" });
+        processAudio(audioBlob);
       };
 
       recognition.current.onerror = (event) => {
@@ -65,12 +71,12 @@ const SpeechToTextApp = () => {
         Animated.timing(micScale, {
           toValue: 1.2, // Scale up
           duration: 500,
-          useNativeDriver: true,
+          useNativeDriver: false, // Disable useNativeDriver
         }),
         Animated.timing(micScale, {
           toValue: 1, // Scale down
           duration: 500,
-          useNativeDriver: true,
+          useNativeDriver: false, // Disable useNativeDriver
         }),
       ])
     ).start();
@@ -102,10 +108,6 @@ const SpeechToTextApp = () => {
     }
   };
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % frenchSentences.length);
-  };
-
   const handleMicPress = () => {
     if (recording) {
       // Arrêter l'enregistrement et traiter l'audio
@@ -119,20 +121,27 @@ const SpeechToTextApp = () => {
     }
   };
 
-  const processAudio = (transcript) => {
-    axios
-      .post("http://localhost:5000/process_audio", {
-        recognized_text: transcript,
-        selected_sentence: frenchSentences[currentIndex],
-      })
-      .then((response) => {
-        setFeedback(response.data.feedback);
-        setMatch(response.data.match);
-        setMessage(response.data.recognized_text);
-      })
-      .catch((error) => {
-        console.error("Erreur lors du traitement de l'audio:", error);
-      });
+  const processAudio = (audioBlob) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = () => {
+      const base64Audio = reader.result.split(",")[1]; // Obtenir la partie base64
+
+      axios
+        .post("http://localhost:5000/process_audio", {
+          audio_data: base64Audio,
+          selected_sentence: frenchSentences[currentIndex],
+        })
+        .then((response) => {
+          setFeedback(response.data.feedback);
+          setMatch(response.data.match);
+          setMessage(response.data.recognized_text);
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error("Erreur lors du traitement de l'audio:", error);
+        });
+    };
   };
 
   return (
@@ -223,11 +232,7 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     marginBottom: 20,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.25)", // Use boxShadow instead of shadow*
   },
   cardText: {
     fontSize: 18,
