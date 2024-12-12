@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const FeedbackDisplay = ({ recognizedText }) => {
   const [feedback, setFeedback] = useState("");
   const [match, setMatch] = useState(false);
 
+  const normalizeText = (text) => {
+    return text
+      .normalize("NFD") // Normaliser les caractères accentués
+      .replace(/[\u0300-\u036f]/g, "") // Supprimer les diacritiques
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Supprimer la ponctuation
+      .replace(/\s{2,}/g, " ") // Remplacer les espaces multiples par un seul espace
+      .trim()
+      .toLowerCase();
+  };
+
   const compareText = async () => {
     try {
       const response = await axios.post("http://localhost:5003/feedback", {
-        recognized_text: recognizedText,
-        reference_phrase: document.getElementById("sentence").innerText,
+        recognized_text: normalizeText(recognizedText),
+        reference_phrase: normalizeText(
+          document.getElementById("sentence").innerText
+        ),
       });
       setFeedback(response.data.feedback.join("\n"));
       setMatch(response.data.match);
@@ -18,20 +30,22 @@ const FeedbackDisplay = ({ recognizedText }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (recognizedText) {
       compareText();
     }
   }, [recognizedText]);
 
   return (
-    <div>
-      <div id="feedback">
+    <div className="feedback-display">
+      <div id="feedback" className="feedback">
         {match ? "Correspondance : Oui" : "Correspondance : Non"}
       </div>
-      <div id="recognizedText"></div>
-      <div id="correctText"></div>
-      <div id="comparison">{feedback}</div>
+      <div id="recognizedText" className="recognized-text"></div>
+      <div id="correctText" className="correct-text"></div>
+      <div id="comparison" className="comparison">
+        {feedback}
+      </div>
     </div>
   );
 };
