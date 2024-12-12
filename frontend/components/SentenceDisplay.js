@@ -15,6 +15,12 @@ const SentenceDisplay = () => {
     }
   };
 
+  const readSentence = () => {
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    utterance.lang = "fr-FR"; // Définir la langue sur le français
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div className="sentence-display">
       <div id="sentence" className="sentence">
@@ -22,6 +28,9 @@ const SentenceDisplay = () => {
       </div>
       <button onClick={getSentence} className="button">
         Obtenir une phrase
+      </button>
+      <button onClick={readSentence} className="button">
+        Écouter la phrase
       </button>
     </div>
   );

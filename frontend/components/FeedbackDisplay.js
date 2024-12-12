@@ -10,7 +10,7 @@ const FeedbackDisplay = ({ recognizedText }) => {
     return text
       .normalize("NFD") // Normaliser les caractères accentués
       .replace(/[\u0300-\u036f]/g, "") // Supprimer les diacritiques
-      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Supprimer la ponctuation
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Supprimer la ponctuation et les tirets
       .replace(/\s{2,}/g, " ") // Remplacer les espaces multiples par un seul espace
       .trim()
       .toLowerCase();
