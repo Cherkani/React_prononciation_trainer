@@ -1,14 +1,23 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import re
+import unicodedata
 
 app = Flask(__name__)
 CORS(app)  # This enables CORS for all routes by default
 
+def normalize_text(text):
+    # Supprimer les accents
+    text = ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+    # Supprimer la ponctuation et les tirets
+    text = re.sub(r'[^\w\s]', '', text)
+    return text.strip().lower()
+
 @app.route('/feedback', methods=['POST'])
 def feedback():
     data = request.json
-    recognized_text = data.get('recognized_text', "").strip().lower()
-    reference_phrase = data.get('reference_phrase', "").strip().lower()
+    recognized_text = normalize_text(data.get('recognized_text', ""))
+    reference_phrase = normalize_text(data.get('reference_phrase', ""))
 
     if not recognized_text or not reference_phrase:
         return jsonify({"error": "Missing recognized text or reference phrase"}), 400
