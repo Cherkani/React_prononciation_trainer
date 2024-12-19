@@ -1,0 +1,12 @@
+# step 1
+
+npm install -g expo-cli
+
+
+# step 2
+
+expo run:android
+
+ou 
+
+expo start
